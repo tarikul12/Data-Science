@@ -1,0 +1,109 @@
+dataset <- read.csv("C:/Users/sadaf/Desktop/ITDS/Mid/Project/Dataset_midterm_Section(C).csv",header=TRUE,sep=",")
+View(dataset)
+
+str(dataset)
+dim(dataset)
+head(dataset)
+tail(dataset)
+
+dataset$X <- NULL
+dataset$X.1 <- NULL
+dataset$X.2 <- NULL
+
+colSums(is.na(dataset))
+
+library(ggplot2)
+
+missing_count <- colSums(is.na(dataset))
+
+ggplot(data = NULL, aes(x = names(missing_count), y = missing_count)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "Count of Missing Values by Variable",
+       x = "Variable",
+       y = "Count of Missing Values") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+which(is.na(dataset$Age))
+which(is.na(dataset$Smoking))
+which(is.na(dataset$DiastolicBP))
+
+dataset_omitted <- na.omit(dataset)
+colSums(is.na(dataset_omitted))  
+
+mean(dataset$Age)
+age_mean <- mean(dataset_omitted$Age)
+age_mean <- round(age_mean, digits = 0)
+cat(age_mean)
+
+Mode <- function(x) {
+  tbl <- table(x)
+  mode_values <- as.numeric(names(tbl[tbl == max(tbl)]))
+  return(mode_values)
+}
+
+smoking_mode <- Mode(dataset_omitted$Smoking)
+cat(smoking_mode)
+
+diastolicBP_mean <- mean(dataset_omitted$DiastolicBP)
+cat(diastolicBP_mean)
+diastolicBP_mean <- round(diastolicBP_mean, digits = 0)
+cat(diastolicBP_mean)
+
+mean_mode_df <- data.frame(Measure = c("Mean Value of Age", "Mode Value of Smoking"),
+                           Value = c(age_mean, smoking_mode))
+
+ggplot(mean_mode_df, aes(x = Measure, y = Value, fill = Measure)) +
+  geom_bar(stat = "identity", width = 0.5, color = "black") +
+  geom_text(aes(label = round(Value, 2)), vjust = -0.5, color = "black", size = 4) +
+  labs(title = "Mean and Mode",
+       x = "Measure",
+       y = "Value") +
+  scale_fill_manual(values = c("Mean Value of Age" = "skyblue", "Mode Value of Smoking" = "green")) +
+  theme_minimal()
+
+dataset_replaced <- dataset
+
+dataset_replaced$Age[is.na(dataset_replaced$Age)] <- age_mean
+
+dataset_replaced$Smoking[is.na(dataset_replaced$Smoking)] <- smoking_mode
+
+dataset_replaced$DiastolicBP[is.na(dataset_replaced$DiastolicBP)] <- diastolicBP_mean
+
+colSums(is.na(dataset_replaced))
+
+boxplot(dataset_replaced$Age, outline = TRUE)
+
+boxplot_stats <- boxplot.stats(dataset_replaced$Age)
+print(boxplot_stats$stats[5])
+
+invalid_age <- which(dataset_replaced$Age > 63)
+cat(invalid_age)
+valid_age_condition <- dataset_replaced$Age <= 63
+dataset_noisy_removed <- dataset_replaced[valid_age_condition, ]
+max(dataset_noisy_removed$Age)
+which(dataset_noisy_removed$Age > 63)
+
+boxplot(dataset_replaced$Smoking, outline = TRUE)
+
+boxplot(dataset_replaced$SystolicBP, outline = TRUE)
+
+boxplot(dataset_replaced$DiastolicBP, outline = TRUE)
+
+boxplot(dataset_replaced$BodyTemp, outline = TRUE)
+
+negative_bodytemp <- which(dataset$BodyTemp < 0)
+print(negative_bodytemp)
+
+dataset_replaced <- dataset[-negative_bodytemp, ]
+boxplot(dataset_replaced$BodyTemp, outline = TRUE)
+which(dataset_replaced$BodyTemp < 0)
+
+boxplot(dataset_replaced$HeartRate, outline = TRUE)
+
+dataset_replaced$RiskLevel <- factor(dataset_replaced$RiskLevel, levels = c("low risk","mid risk","high risk"), labels = c(0,1,2))
+View(dataset_replaced)
+
+
+
